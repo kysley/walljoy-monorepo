@@ -1,0 +1,59 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator db {
+  provider = "prisma-client-js"
+}
+
+generator pothos {
+  provider = "prisma-pothos-types"
+}
+
+model Account {
+  id            String         @id @default(uuid())
+  email         String
+  devices       Device[]
+  refreshTokens RefreshToken[]
+  collections   Collection[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deviceId  String
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id])
+}
+
+model Device {
+  id                 String  @id @default(cuid())
+  deviceId           String
+  authorized         Boolean
+  name               String
+  code               String
+  activeCollectionId Int?
+  account            Account @relation(fields: [accountId], references: [id])
+  accountId          String
+}
+
+model Wallpaper {
+  id         Int          @id @default(autoincrement())
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  u_url      String       @unique
+  collection Collection[]
+}
+
+model Collection {
+  id         Int         @id @default(autoincrement())
+  name       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  owner      Account     @relation(fields: [ownerId], references: [id])
+  ownerId    String
+  wallpapers Wallpaper[]
+  official   Boolean
+}
