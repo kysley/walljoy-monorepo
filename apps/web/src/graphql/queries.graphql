@@ -1,0 +1,60 @@
+# query wallpapers($where: PaginationArgs) {
+#   wallpapers(where: $where) {
+#     u_url
+#     id
+#     createdAt
+#     collection {
+#       id
+#       name
+#     }
+#   }
+# }
+
+# query collection($id: Int, $name: String) {
+#   collection(where: {id: $id, name: $name}) {
+#     id
+#     name
+#     wallpapers {
+#       u_url
+#       id
+#       createdAt
+#     }
+#   }
+# }
+
+# query wallpaper($id: Int) {
+#   wallpaper(where: {id: $id}) {
+#     id
+#     u_url
+#     createdAt
+#     # figure out what to do with collection
+#   }
+# }
+
+# query Feed($where: PaginationArgs) {
+#   feed(where: $where) {
+#     u_url
+#     id
+#     createdAt
+#     collection {
+#       id
+#       name
+#     }
+#   }
+# }
+
+# query signin {
+#   signin {
+#     email
+#     id
+#     devices {
+#       name
+#       id
+#       authorized
+#     }
+#   }
+# }
+
+query me {
+  me
+}
