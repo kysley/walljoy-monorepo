@@ -1,25 +1,13 @@
-import { createServer } from "@graphql-yoga/node";
-import SchemaBuilder from "@pothos/core";
-import fastify, { FastifyReply, FastifyRequest } from "fastify";
+import fastify from "fastify";
 import mercurius from "mercurius";
 import fcors from "@fastify/cors";
-import PrismaPlugin from "@pothos/plugin-prisma";
-import { PrismaClient } from "@prisma/client";
-import type PrismaTypes from "@pothos/plugin-prisma/generated";
 import fastifyJwt from "@fastify/jwt";
 import { fastifyCookie } from "@fastify/cookie";
+import { builder } from "./builder";
+import { prisma } from "./prisma";
+import { Wallpaper } from "./schema";
 
-const prisma = new PrismaClient({});
-
-const builder = new SchemaBuilder<{
-	PrismaTypes: PrismaTypes;
-	Context: { request: FastifyRequest; reply: FastifyReply };
-}>({
-	plugins: [PrismaPlugin],
-	prisma: {
-		client: prisma,
-	},
-});
+import "./schema";
 
 builder.queryType({
 	fields: (t) => ({
@@ -41,6 +29,15 @@ builder.queryType({
 				}
 
 				// return cookieValue || "no cookie";
+			},
+		}),
+		wallpapers: t.prismaField({
+			type: ["Wallpaper"],
+			nullable: true,
+			resolve: async (query, root, args, ctx, info) => {
+				const a = await prisma.wallpaper.findMany();
+				console.log(a);
+				return a;
 			},
 		}),
 	}),
