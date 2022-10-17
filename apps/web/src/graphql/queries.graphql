@@ -56,5 +56,8 @@
 # }
 
 query me {
-  me
+  me {
+    email
+    id
+  }
 }

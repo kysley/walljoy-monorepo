@@ -1,21 +1,6 @@
-# mutation register($input: LoginInput!) {
-#   register(input: $input) {
-#     token
-#     refreshToken
-#   }
-# }
-
-# mutation AuthenticateSession($sId: String!) {
-#   authenticateSession(sId: $sId)
-# }
-
-mutation authenticate($deviceID: String!) {
-  authenticate(deviceID: $deviceID)
+mutation createAccount($code: String!, $deviceId: String!, $email: String!, $name:String!) {
+  createAccount(code:$code, deviceId: $deviceId, email: $email, name:$name) {
+    email
+    id
+  }
 }
-
-# mutation RefreshCredentials($refreshToken: String!) {
-#   refreshCredentials(refreshToken: $refreshToken) {
-#     token
-#     refreshToken
-#   }
-# }

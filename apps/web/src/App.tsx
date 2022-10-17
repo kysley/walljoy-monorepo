@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { globalCss } from "@stitches/react";
+import { globalCss, styled } from "@stitches/react";
 
 // import { Feed } from "./pages/Feed";
 // import { Collection } from "./pages/Collection";
@@ -24,7 +24,7 @@ function App({}: AppProps) {
 	console.log(res);
 	return (
 		<BrowserRouter>
-			<div className="App">
+			<Container className="App">
 				<Header />
 				<Routes>
 					{/* <Route path="/" element={<Feed />} />
@@ -32,9 +32,14 @@ function App({}: AppProps) {
 					<Route path="w/:id" element={<Wallpaper />} /> */}
 					<Route path="register" element={<Register />} />
 				</Routes>
-			</div>
+			</Container>
 		</BrowserRouter>
 	);
 }
+
+const Container = styled("div", {
+	width: "100vw",
+	height: "100vh",
+});
 
 export default App;

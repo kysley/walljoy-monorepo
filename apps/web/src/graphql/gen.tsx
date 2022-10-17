@@ -15,20 +15,61 @@ export type Scalars = {
   Float: number;
 };
 
+export type Account = {
+  __typename?: 'Account';
+  devices: Array<Device>;
+  email: Scalars['String'];
+  id: Scalars['ID'];
+};
+
+export type Collection = {
+  __typename?: 'Collection';
+  id: Scalars['ID'];
+  name: Scalars['String'];
+  wallpapers: Array<Wallpaper>;
+};
+
+export type Device = {
+  __typename?: 'Device';
+  activeCollectionId?: Maybe<Scalars['Int']>;
+  authorized: Scalars['Boolean'];
+  deviceId: Scalars['String'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
-  authenticate: Scalars['String'];
+  createAccount: Account;
+  register: Account;
+  registerDevice: Scalars['String'];
 };
 
 
-export type MutationAuthenticateArgs = {
-  deviceID?: InputMaybe<Scalars['String']>;
+export type MutationCreateAccountArgs = {
+  code: Scalars['String'];
+  deviceId: Scalars['String'];
+  email: Scalars['String'];
+  name: Scalars['String'];
+};
+
+
+export type MutationRegisterArgs = {
+  deviceId: Scalars['String'];
+  deviceName: Scalars['String'];
+  email: Scalars['String'];
+};
+
+
+export type MutationRegisterDeviceArgs = {
+  deviceId: Scalars['String'];
 };
 
 export type Query = {
   __typename?: 'Query';
   hello?: Maybe<Scalars['String']>;
-  me: Scalars['String'];
+  me: Account;
+  wallpapers?: Maybe<Array<Wallpaper>>;
 };
 
 
@@ -36,31 +77,46 @@ export type QueryHelloArgs = {
   name?: InputMaybe<Scalars['String']>;
 };
 
-export type AuthenticateMutationVariables = Exact<{
-  deviceID: Scalars['String'];
+export type Wallpaper = {
+  __typename?: 'Wallpaper';
+  id: Scalars['ID'];
+  unsplashUrl?: Maybe<Scalars['String']>;
+};
+
+export type CreateAccountMutationVariables = Exact<{
+  code: Scalars['String'];
+  deviceId: Scalars['String'];
+  email: Scalars['String'];
+  name: Scalars['String'];
 }>;
 
 
-export type AuthenticateMutation = { __typename?: 'Mutation', authenticate: string };
+export type CreateAccountMutation = { __typename?: 'Mutation', createAccount: { __typename?: 'Account', email: string, id: string } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: string };
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'Account', email: string, id: string } };
 
 
-export const AuthenticateDocument = gql`
-    mutation authenticate($deviceID: String!) {
-  authenticate(deviceID: $deviceID)
+export const CreateAccountDocument = gql`
+    mutation createAccount($code: String!, $deviceId: String!, $email: String!, $name: String!) {
+  createAccount(code: $code, deviceId: $deviceId, email: $email, name: $name) {
+    email
+    id
+  }
 }
     `;
 
-export function useAuthenticateMutation() {
-  return Urql.useMutation<AuthenticateMutation, AuthenticateMutationVariables>(AuthenticateDocument);
+export function useCreateAccountMutation() {
+  return Urql.useMutation<CreateAccountMutation, CreateAccountMutationVariables>(CreateAccountDocument);
 };
 export const MeDocument = gql`
     query me {
-  me
+  me {
+    email
+    id
+  }
 }
     `;
 
