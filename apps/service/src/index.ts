@@ -8,6 +8,13 @@ import { prisma } from "./prisma";
 import { Wallpaper } from "./schema";
 
 import "./schema";
+import { lexicographicSortSchema, printSchema } from "graphql";
+import { writeFileSync } from "fs";
+
+type UserDeviceCookie = {
+	deviceId: string;
+	accountId: string;
+};
 
 builder.queryType({
 	fields: (t) => ({
@@ -18,26 +25,58 @@ builder.queryType({
 			resolve: (parent, { name }) => `hello, ${name || "World"}`,
 			nullable: true,
 		}),
-		me: t.string({
-			resolve: async (parent, { name }, { request, reply }) => {
+		me: t.prismaField({
+			type: "Account",
+			nullable: true,
+			resolve: async (query, root, args, { request }, info) => {
 				const cookieValue = request.cookies.token;
 				console.log(cookieValue);
-				if (cookieValue) {
-					const valid = await request.jwtVerify(cookieValue);
-					console.log(valid.deviceID);
-					return valid.deviceID;
-				}
 
-				// return cookieValue || "no cookie";
+				if (cookieValue) {
+					const jwt = await request.jwtVerify<UserDeviceCookie>();
+					return prisma.account.findUnique({ where: { id: jwt.accountId } });
+				}
+			},
+		}),
+		collection: t.prismaField({
+			type: "Collection",
+			args: {
+				id: t.arg.id({ required: true }),
+			},
+			nullable: true,
+			resolve: async (query, root, { id }, ctx, info) => {
+				return prisma.collection.findUnique({
+					where: { id: +id },
+					include: { wallpapers: true },
+				});
+			},
+		}),
+		collectionLatest: t.prismaField({
+			type: Wallpaper,
+			nullable: true,
+			args: {
+				id: t.arg.id({ required: true }),
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				const v = await prisma.collection.findUnique({
+					where: { id: +args.id },
+					select: {
+						wallpapers: {
+							orderBy: {
+								createdAt: "desc",
+							},
+							take: 1,
+						},
+					},
+				});
+				return v?.wallpapers[0];
 			},
 		}),
 		wallpapers: t.prismaField({
-			type: ["Wallpaper"],
+			type: [Wallpaper],
 			nullable: true,
 			resolve: async (query, root, args, ctx, info) => {
-				const a = await prisma.wallpaper.findMany();
-				console.log(a);
-				return a;
+				return prisma.wallpaper.findMany();
 			},
 		}),
 	}),
@@ -45,14 +84,31 @@ builder.queryType({
 
 builder.mutationType({
 	fields: (t) => ({
-		authenticate: t.string({
+		register: t.prismaField({
+			type: "Account",
 			args: {
-				deviceID: t.arg.string(),
+				deviceId: t.arg.string({ required: true }),
+				deviceName: t.arg.string({ required: true }),
+				email: t.arg.string({ required: true }),
+				// code: t.arg.string({ required: true }),
 			},
-			resolve: async (parent, { deviceID }, ctx) => {
-				// ctx.request.cook
+			resolve: async (query, root, args, ctx, info) => {
+				const account = await prisma.account.create({
+					data: {
+						email: args.email,
+						devices: {
+							create: {
+								deviceId: args.deviceId,
+								authorized: true,
+								code: "NO_CODE",
+								name: args.deviceName,
+							},
+						},
+					},
+				});
 				const token = await ctx.reply.jwtSign({
-					deviceID,
+					deviceId: args.deviceId,
+					accountId: account.id,
 				});
 
 				ctx.reply.setCookie("token", token, {
@@ -63,16 +119,104 @@ builder.mutationType({
 					// sameSite: true,
 					sameSite: "none",
 				});
-				// .code(200);
-				// .send("cookie sent");
 
-				return "cookie sent";
+				return account;
 			},
 		}),
+		// Create a nameless device tied to a code
+		// This device will get a name & become authenticated on account creation
+		registerDevice: t.string({
+			args: {
+				deviceId: t.arg.string({ required: true }),
+			},
+			resolve: async (parent, { deviceId }, ctx) => {
+				const code = Math.random().toString(36).slice(2, 6).toUpperCase();
+				const device = await prisma.device.upsert({
+					where: { deviceId },
+					update: {},
+					create: {
+						deviceId,
+						code,
+					},
+				});
+
+				return device.code;
+			},
+		}),
+		createAccount: t.prismaField({
+			type: "Account",
+			args: {
+				deviceId: t.arg.string({ required: true }),
+				code: t.arg.string({ required: true }),
+				name: t.arg.string({ required: true }),
+				email: t.arg.string({ required: true }),
+			},
+			resolve: async (query, root, args, ctx, info) => {
+				const { code, deviceId, email, name } = args;
+				//todo: make sure code matches to connect device
+				const account = await prisma.account.create({
+					data: {
+						email,
+						devices: {
+							connect: {
+								deviceId,
+							},
+						},
+					},
+				});
+				const device = await prisma.device.update({
+					where: { deviceId },
+					data: {
+						name,
+						authorized: true,
+					},
+				});
+				const token = await ctx.reply.jwtSign({
+					deviceId,
+					accountId: account.id,
+				});
+
+				ctx.reply.setCookie("token", token, {
+					// domain: 'localhost:6678',
+					// path: '/'
+					secure: true,
+					httpOnly: true,
+					// sameSite: true,
+					sameSite: "none",
+				});
+				return account;
+			},
+		}),
+		// 	authenticate: t.string({
+		// 		args: {
+		// 			deviceId: t.arg.string({required: true}),
+		// 			code: t.arg.string({required:true})
+		// 		},
+		// 		resolve: async (parent, { deviceId, code }, ctx) => {
+		// 			// ctx.request.cook
+		// 			const token = await ctx.reply.jwtSign({
+		// 				deviceId,
+		// 			});
+
+		// 			ctx.reply.setCookie("token", token, {
+		// 				// domain: 'localhost:6678',
+		// 				// path: '/'
+		// 				secure: true,
+		// 				httpOnly: true,
+		// 				// sameSite: true,
+		// 				sameSite: "none",
+		// 			});
+
+		// 			return "cookie sent";
+		// 		},
+		// 	}),
 	}),
 });
 
 const schema = builder.toSchema();
+
+const schemaAsString = printSchema(lexicographicSortSchema(schema));
+writeFileSync("./schema.graphql", schemaAsString);
 
 const app = fastify();
 

@@ -13,7 +13,7 @@ generator pothos {
 
 model Account {
   id            String         @id @default(uuid())
-  email         String
+  email         String         @unique
   devices       Device[]
   refreshTokens RefreshToken[]
   collections   Collection[]
@@ -29,14 +29,17 @@ model RefreshToken {
 }
 
 model Device {
-  id                 String  @id @default(cuid())
-  deviceId           String
-  authorized         Boolean
-  name               String
+  id                 String      @id @default(cuid())
+  deviceId           String      @unique
+  // Not authorized if the device hasn't been connected to an account
+  authorized         Boolean     @default(false)
+  // Won't have a device name until account creation
+  name               String?
   code               String
+  activeCollection   Collection? @relation(fields: [activeCollectionId], references: [id])
   activeCollectionId Int?
-  account            Account @relation(fields: [accountId], references: [id])
-  accountId          String
+  accountId          String?
+  account            Account?    @relation(fields: [accountId], references: [id])
 }
 
 model Wallpaper {
@@ -56,4 +59,5 @@ model Collection {
   ownerId    String
   wallpapers Wallpaper[]
   official   Boolean
+  Device     Device[]
 }

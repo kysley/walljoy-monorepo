@@ -1,4 +1,5 @@
 import { builder } from "../builder";
+import { prisma } from "../prisma";
 
 export const Account = builder.prismaObject("Account", {
 	fields: (t) => ({
@@ -16,6 +17,7 @@ export const Device = builder.prismaObject("Device", {
 		activeCollectionId: t.exposeInt("activeCollectionId", {
 			nullable: true,
 		}),
+		name: t.exposeString("name", { nullable: true }),
 	}),
 });
 
@@ -31,6 +33,5 @@ export const Collection = builder.prismaObject("Collection", {
 		id: t.exposeID("id"),
 		name: t.exposeString("name"),
 		wallpapers: t.relation("wallpapers"),
-		// createdAt: t.string("createdAt"),
 	}),
 });
