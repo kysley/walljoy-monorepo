@@ -3,16 +3,8 @@ import React, {useRef, useState} from 'react';
 
 import {useIntersection} from '../hooks/useIntersectionObserver';
 
-export const LazyImage = ({url}) => {
-  const [inView, setinView] = useState(false);
-  const imgRef = useRef(null);
-  useIntersection(imgRef, () => {
-    setinView(true);
-  });
-
-  return (
-    <div ref={imgRef}>{inView ? <Image src={url} /> : <Image src="" />}</div>
-  );
+export const LazyImage = ({url}: {url: string}) => {
+  return <Image loading="lazy" src={url} alt="" />;
 };
 
 export const Image = styled('img', {

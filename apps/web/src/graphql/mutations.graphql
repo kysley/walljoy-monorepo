@@ -4,3 +4,15 @@ mutation createAccount($code: String!, $deviceId: String!, $email: String!, $nam
     id
   }
 }
+
+mutation followCollection($id: Int!) {
+  followCollection(id: $id) {
+    name
+  }
+}
+
+mutation selectWallpaper($id: Int!) {
+  selectWallpaper(id: $id) {
+    id
+  }
+}

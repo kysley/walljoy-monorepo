@@ -1,12 +1,13 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {Fragment, ReactNode, useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {useGesture} from 'react-use-gesture';
 import {useSpring, animated, to} from 'react-spring';
 
 import {useLockBodyScroll} from '../hooks';
 import {LazyImage} from './Image';
+import {CgClose, CgCloseO, CgCloseR} from 'react-icons/cg';
 
-export const Portal: React.FC = ({children}) => {
+export const Portal = ({children}: {children: ReactNode}) => {
   const mount = document.getElementById('portal-root');
   const el = document.createElement('div');
 
@@ -20,22 +21,25 @@ export const Portal: React.FC = ({children}) => {
   return createPortal(children, el);
 };
 
-export const ScrollLock: React.FC = ({children}) => {
+export const ScrollLock = ({children}: {children: ReactNode}) => {
   useLockBodyScroll();
-  return children;
+  return <Fragment>{children}</Fragment>;
 };
 
-const PanZoomModal = ({close, $src}) => {
+const PanZoomModal = ({close, $src}: {close(): void; $src: string}) => {
   const portalImageRef = useRef(null);
 
   useEffect(() => {
     const preventDefault = (e: Event) => e.preventDefault();
+    const keydown = (e: KeyboardEvent) => e.key === 'Escape' && close();
     document.addEventListener('gesturestart', preventDefault);
     document.addEventListener('gesturechange', preventDefault);
+    document.addEventListener('keydown', keydown);
 
     return () => {
       document.removeEventListener('gesturestart', preventDefault);
       document.removeEventListener('gesturechange', preventDefault);
+      document.removeEventListener('keydown', keydown);
     };
   }, []);
 
@@ -44,7 +48,7 @@ const PanZoomModal = ({close, $src}) => {
     scale: 1,
     x: 0,
     y: 0,
-    // config: {mass: 5, tension: 350, friction: 40},
+    config: {mass: 1, tension: 1000, friction: 80, bounce: 0.05},
   }));
 
   useGesture(
@@ -85,15 +89,28 @@ const PanZoomModal = ({close, $src}) => {
               height: '100%',
               width: '100%',
               cursor: 'grab',
+              display: 'flex',
             }}
-          ></animated.div>
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                margin: '1rem',
+              }}
+            >
+              <CgClose size={24} style={{}} onClick={close} />
+              <span>esc</span>
+            </div>
+          </animated.div>
         </div>
       </ScrollLock>
     </Portal>
   );
 };
 
-export const PanZoom: React.FC = ({source}) => {
+export const PanZoom = ({source}: {source: string}) => {
   const [expanded, setExpanded] = useState(false);
 
   const handleImageClick = () => {

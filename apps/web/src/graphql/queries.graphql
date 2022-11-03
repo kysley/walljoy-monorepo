@@ -22,15 +22,6 @@
 #   }
 # }
 
-# query wallpaper($id: Int) {
-#   wallpaper(where: {id: $id}) {
-#     id
-#     u_url
-#     createdAt
-#     # figure out what to do with collection
-#   }
-# }
-
 # query Feed($where: PaginationArgs) {
 #   feed(where: $where) {
 #     u_url
@@ -55,9 +46,70 @@
 #   }
 # }
 
+
+query wallpaper($id: Int!) {
+  wallpaper(id: $id) {
+    id
+    unsplashUrl
+    createdAt
+    devices
+  }
+}
+
 query me {
   me {
     email
     id
+    devices {
+      id
+      deviceId
+      name
+    }
+  }
+}
+
+query collectionLatest($id: ID!) {
+  collectionLatest(id: $id) {
+    id
+    unsplashUrl
+  }
+}
+
+query collection($id: ID!) {
+  collection(id: $id) {
+    id
+    wallpapers {
+      unsplashUrl
+      id
+      createdAt
+    }
+    name
+    followers
+  }
+}
+
+fragment PartialDeviceFragment on Device {
+  id
+  deviceId
+  name
+}
+
+query devices {
+  devices {
+    ...PartialDeviceFragment
+    followedCollection {
+      name
+    }
+  }
+}
+
+query currentDevice {
+  currentDevice {
+    ...PartialDeviceFragment
+    authorized
+    followedCollection {
+      id
+      name
+    }
   }
 }

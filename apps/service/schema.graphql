@@ -5,34 +5,42 @@ type Account {
 }
 
 type Collection {
+  followers: Int!
   id: ID!
   name: String!
   wallpapers: [Wallpaper!]!
 }
 
 type Device {
-  activeCollectionId: Int
   authorized: Boolean!
   deviceId: String!
+  followedCollection: Collection
   id: ID!
   name: String
+  selectWallpaper: Wallpaper
 }
 
 type Mutation {
   createAccount(code: String!, deviceId: String!, email: String!, name: String!): Account!
+  followCollection(id: Int!): Device
   register(deviceId: String!, deviceName: String!, email: String!): Account!
   registerDevice(deviceId: String!): String!
+  selectWallpaper(id: Int!): Device
 }
 
 type Query {
   collection(id: ID!): Collection
   collectionLatest(id: ID!): Wallpaper
-  hello(name: String): String
+  currentDevice: Device
+  devices: [Device!]
   me: Account
+  wallpaper(id: Int!): Wallpaper
   wallpapers: [Wallpaper!]
 }
 
 type Wallpaper {
+  createdAt: String!
+  devices: Int!
   id: ID!
   unsplashUrl: String
 }

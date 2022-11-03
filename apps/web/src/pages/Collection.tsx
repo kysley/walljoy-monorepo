@@ -1,31 +1,41 @@
-// import React from 'react';
-// import {useParams} from 'react-router';
-// import {WallpaperCard} from '../components/WallpaperCard';
+import React from 'react';
+import {useParams} from 'react-router';
+import {Page} from '../components/Page';
+import {WallpaperCard} from '../components/WallpaperCard';
 
-// import {useCollectionQuery} from '../graphql/gen';
+import {useCollectionQuery, useFollowCollectionMutation} from '../graphql/gen';
+import {useCurrentDevice} from '../hooks/useCurrentDevice';
 
-// export const Collection = () => {
-//   const {collection} = useParams();
-//   const [res] = useCollectionQuery({
-//     variables: isNaN(Number(collection))
-//       ? {name: collection}
-//       : {id: Number(collection)},
-//   });
+export const Collection = () => {
+  const {id} = useParams();
+  const [res] = useCollectionQuery({
+    variables: {id},
+    pause: !id,
+  });
+  const [data, mut] = useFollowCollectionMutation();
+  const {data: device} = useCurrentDevice();
 
-//   if (!collection) {
-//     return <span>collection!?</span>;
-//   }
+  const isDeviceFollowing =
+    device?.currentDevice?.followedCollection?.id === res.data?.collection?.id;
 
-//   if (res.error) {
-//     return <span>something went wrong</span>;
-//   }
+  if (!id) {
+    return <span>no collection id</span>;
+  }
 
-//   return (
-//     <>
-//       <h1>{res.data?.collection?.name}</h1>
-//       {res.data?.collection?.wallpapers.map((wp) => (
-//         <WallpaperCard key={wp.id} wallpaper={wp} standalone />
-//       ))}
-//     </>
-//   );
-// };
+  if (res.error) {
+    return <span>something went wrong</span>;
+  }
+
+  return (
+    <Page title={res.data?.collection?.name || 'Loading'}>
+      <button onClick={(_) => mut({id: +id})} disabled={isDeviceFollowing}>
+        {isDeviceFollowing ? 'following' : 'follow'}
+      </button>
+      {res.data?.collection?.wallpapers.map((wp) => (
+        <WallpaperCard key={wp.id} wallpaper={wp} standalone />
+      ))}
+    </Page>
+  );
+};
+
+// const CollectionHeader =

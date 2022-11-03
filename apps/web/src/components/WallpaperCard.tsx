@@ -6,7 +6,7 @@ import {when} from 'whendys';
 
 import type {Wallpaper} from '../graphql/gen';
 import {PanZoom} from './ZoomPan';
-import {Stack} from './Stack';
+import {Stack} from './system';
 
 export const WallpaperCard = ({
   wallpaper,
@@ -15,18 +15,20 @@ export const WallpaperCard = ({
   wallpaper: Wallpaper;
   standalone: boolean;
 }) => {
-  const {id, createdAt, u_url, collection} = wallpaper;
+  const {id, unsplashUrl} = wallpaper;
 
   return (
     <Container>
       <LinkContainer direction="row">
         <Link to={`w/${id}`}>
-          <span style={{color: 'green'}}>{when(createdAt)}</span>
+          <span style={{color: 'green'}}>{when(wallpaper.createdAt)}</span>
+          {/* <span style={{color: 'green'}}>some time ago</span> */}
+          <span>on {wallpaper.devices} screens</span>
         </Link>
         {!standalone && (
           <>
             <CgArrowLongRight size="42px" />
-            {collection.map((collection) => (
+            {/* {collection.map((collection) => (
               <Link
                 key={collection.id}
                 to={`c/${collection?.id}`}
@@ -34,11 +36,11 @@ export const WallpaperCard = ({
               >
                 {collection?.name}
               </Link>
-            ))}
+            ))} */}
           </>
         )}
       </LinkContainer>
-      <PanZoom source={u_url} alt="" />
+      <PanZoom source={`/img/${unsplashUrl}.jpg`} />
     </Container>
   );
 };
