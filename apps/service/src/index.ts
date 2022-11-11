@@ -12,6 +12,7 @@ import { lexicographicSortSchema, printSchema } from "graphql";
 import { writeFileSync } from "fs";
 import { BaseTypeRef } from "@pothos/core";
 import { info } from "console";
+import { Prisma } from "@prisma/client";
 
 type UserDeviceCookie = {
   deviceId: string;
@@ -20,6 +21,37 @@ type UserDeviceCookie = {
 
 builder.queryType({
   fields: (t) => ({
+    feed: t.prismaField({
+      type: ["Wallpaper"],
+      args: {
+        skip: t.arg.int({ required: false }),
+        take: t.arg.int({ required: false }),
+        cursor: t.arg.int({ required: false }),
+        // orderBy: t.arg.string({ required: false }),
+        // orderBy: t.arg({
+        //   type: Prisma.SortOrder,
+        // }),
+      },
+      resolve: async (query, root, args, { request }, info) => {
+        return prisma.wallpaper.findMany({
+          ...query,
+          skip: args.skip ?? undefined,
+          take: args.take ?? undefined,
+          orderBy: {
+            createdAt: args?.orderBy ?? "desc",
+          },
+        });
+        // const cookieValue = request.cookies.token;
+        // if (cookieValue) {
+        //   const jwt = await request.jwtVerify<UserDeviceCookie>();
+        //   return prisma.device.findMany({
+        //     where: {
+        //       accountId: jwt.accountId,
+        //     },
+        //   });
+        // }
+      },
+    }),
     devices: t.prismaField({
       type: [Device],
       nullable: true,
@@ -123,50 +155,27 @@ builder.queryType({
         return prisma.wallpaper.findUnique({ where: { id: args.id } });
       },
     }),
+    deviceStatus: t.boolean({
+      args: {
+        code: t.arg.string({ required: true }),
+        deviceId: t.arg.string({ required: true }),
+      },
+      nullable: true,
+      resolve: async (parent, args, ctx) => {
+        const device = await prisma.device.findUnique({
+          where: { deviceId: args.deviceId },
+        });
+        if (device?.authorized) {
+          return true;
+        }
+        return false;
+      },
+    }),
   }),
 });
 
 builder.mutationType({
   fields: (t) => ({
-    register: t.prismaField({
-      type: "Account",
-      args: {
-        deviceId: t.arg.string({ required: true }),
-        deviceName: t.arg.string({ required: true }),
-        email: t.arg.string({ required: true }),
-        // code: t.arg.string({ required: true }),
-      },
-      resolve: async (query, root, args, ctx, info) => {
-        const account = await prisma.account.create({
-          data: {
-            email: args.email,
-            devices: {
-              create: {
-                deviceId: args.deviceId,
-                authorized: true,
-                code: "NO_CODE",
-                name: args.deviceName,
-              },
-            },
-          },
-        });
-        const token = await ctx.reply.jwtSign({
-          deviceId: args.deviceId,
-          accountId: account.id,
-        });
-
-        ctx.reply.setCookie("token", token, {
-          // domain: 'localhost:6678',
-          // path: '/'
-          secure: true,
-          httpOnly: true,
-          // sameSite: true,
-          sameSite: "none",
-        });
-
-        return account;
-      },
-    }),
     // Create a nameless device tied to a code
     // This device will get a name & become authenticated on account creation
     registerDevice: t.string({
@@ -252,7 +261,7 @@ builder.mutationType({
             },
             data: {
               selectWallpaper: {
-                delete: true,
+                disconnect: true,
               },
               followedCollection: {
                 connect: {
@@ -290,29 +299,60 @@ builder.mutationType({
         }
       },
     }),
-    // 	authenticate: t.string({
-    // 		args: {
-    // 			deviceId: t.arg.string({required: true}),
-    // 			code: t.arg.string({required:true})
-    // 		},
-    // 		resolve: async (parent, { deviceId, code }, ctx) => {
-    // 			// ctx.request.cook
-    // 			const token = await ctx.reply.jwtSign({
-    // 				deviceId,
-    // 			});
+    authenticate: t.prismaField({
+      type: "Account",
+      args: {
+        deviceId: t.arg.string({ required: true }),
+        code: t.arg.string({ required: true }),
+        email: t.arg.string({ required: true }),
+      },
+      nullable: true,
+      resolve: async (query, root, args, ctx, info) => {
+        const account = await prisma.account.findUnique({
+          where: {
+            email: args.email,
+          },
+          select: {
+            id: true,
+            email: true,
+            devices: {
+              where: {
+                AND: [
+                  {
+                    code: {
+                      equals: args.code,
+                    },
+                  },
+                  {
+                    deviceId: {
+                      equals: args.deviceId,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        });
 
-    // 			ctx.reply.setCookie("token", token, {
-    // 				// domain: 'localhost:6678',
-    // 				// path: '/'
-    // 				secure: true,
-    // 				httpOnly: true,
-    // 				// sameSite: true,
-    // 				sameSite: "none",
-    // 			});
+        if (account?.devices.length) {
+          const token = await ctx.reply.jwtSign({
+            deviceId: account.devices[0].id,
+            accountId: account.id,
+          });
 
-    // 			return "cookie sent";
-    // 		},
-    // 	}),
+          ctx.reply.setCookie("token", token, {
+            // domain: 'localhost:6678',
+            // path: '/'
+            secure: true,
+            httpOnly: true,
+            // sameSite: true,
+            sameSite: "none",
+          });
+
+          return account;
+        }
+      },
+    }),
   }),
 });
 

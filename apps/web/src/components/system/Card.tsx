@@ -1,3 +1,4 @@
+import {style} from '@vanilla-extract/css';
 import * as React from 'react';
 import {CSSFunctionArgs} from 'system-props';
 import {vars} from './theme/global-theme.css';
@@ -41,12 +42,20 @@ export function Card({
     padding: space,
     alignItems: align,
     borderRadius: 'medium',
-    borderColor: 'red-200',
+    borderColor: 'zinc-600',
     borderStyle: 'solid',
+    borderWidth: 'standard',
+
     // since this returns a css object (with injected properties) there really is no difference between
     // this and keeping `sx` but not passing it through `css`
-    ...sx,
+    // ...sx,
   });
 
-  return React.createElement('div', {className}, children);
+  return React.createElement('div', {className, ...rest}, children);
 }
+
+// const styles = style({
+//   ':-moz-any-link': {
+//     accentColor: '-moz-initial',
+//   },
+// });

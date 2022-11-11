@@ -1,13 +1,29 @@
 import { PrismaClient } from "@prisma/client";
+import { waitToGetUnsplashUrl } from "../src/unsplash";
 
 const prisma = new PrismaClient({});
 
 async function main() {
+  const v = await waitToGetUnsplashUrl();
+  console.log(v);
+
   try {
     await prisma.account.create({
       data: {
         email: "",
         id: "admin",
+        devices: {
+          connectOrCreate: {
+            create: {
+              code: "ABCD",
+              name: "Test device",
+              deviceId: "001",
+            },
+            where: {
+              id: "admin",
+            },
+          },
+        },
       },
     });
   } catch (e) {
@@ -21,16 +37,19 @@ async function main() {
         name: "Earth",
         official: true,
         ownerId: "admin",
+        id: 1,
       },
       {
         name: "Random",
         official: true,
         ownerId: "admin",
+        id: 2,
       },
       {
         name: "Structure",
         official: true,
         ownerId: "admin",
+        id: 3,
       },
     ],
   });
@@ -38,19 +57,19 @@ async function main() {
   // Earth collection
   await prisma.collection.update({
     where: {
-      id: 4,
+      id: 1,
     },
     data: {
       wallpapers: {
         create: [
           {
-            u_url: "earth-1",
+            u_url: await waitToGetUnsplashUrl(),
           },
           {
-            u_url: "earth-2",
+            u_url: await waitToGetUnsplashUrl(),
           },
           {
-            u_url: "earth-3",
+            u_url: await waitToGetUnsplashUrl(),
           },
         ],
       },
@@ -60,19 +79,19 @@ async function main() {
   // Random collection
   await prisma.collection.update({
     where: {
-      id: 5,
+      id: 2,
     },
     data: {
       wallpapers: {
         create: [
           {
-            u_url: "random-1",
+            u_url: await waitToGetUnsplashUrl(),
           },
           {
-            u_url: "random-2",
+            u_url: await waitToGetUnsplashUrl(),
           },
           {
-            u_url: "random-3",
+            u_url: await waitToGetUnsplashUrl(),
           },
         ],
       },
@@ -82,19 +101,19 @@ async function main() {
   // Structure collection
   await prisma.collection.update({
     where: {
-      id: 6,
+      id: 3,
     },
     data: {
       wallpapers: {
         create: [
           {
-            u_url: "structure-1",
+            u_url: await waitToGetUnsplashUrl(),
           },
           {
-            u_url: "structure-2",
+            u_url: await waitToGetUnsplashUrl(),
           },
           {
-            u_url: "structure-3",
+            u_url: await waitToGetUnsplashUrl(),
           },
         ],
       },

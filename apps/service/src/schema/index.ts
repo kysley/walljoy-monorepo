@@ -53,6 +53,6 @@ export const Collection = builder.prismaObject("Collection", {
     id: t.exposeID("id"),
     name: t.exposeString("name"),
     wallpapers: t.relation("wallpapers"),
-    followers: t.relationCount("device"),
+    followers: t.relationCount("devices"),
   }),
 });

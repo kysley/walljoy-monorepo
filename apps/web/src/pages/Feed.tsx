@@ -1,8 +1,9 @@
-// import {styled} from '@stitches/react';
-// import React, {useState} from 'react';
+import {styled} from '@stitches/react';
+import React, {useState} from 'react';
+import {Stack} from '../components/system';
 
-// import {WallpaperCard} from '../components/WallpaperCard';
-// import {useFeedQuery, PaginationArgs} from '../graphql/gen';
+import {WallpaperCard} from '../components/WallpaperCard';
+import {useFeedQuery} from '../graphql/gen';
 
 // type PageProps = {
 //   variables: PaginationArgs;
@@ -37,34 +38,43 @@
 //   );
 // };
 
-// export const Feed = () => {
-//   const [pageVariables, setPageVariables] = useState([
-//     {
-//       take: 15,
-//       cursor: null as null | number,
-//     },
-//   ]);
+export const Feed = () => {
+  // const [pageVariables, setPageVariables] = useState([
+  //   {
+  //     take: 15,
+  //     cursor: null as null | number,
+  //   },
+  // ]);
+  const [res] = useFeedQuery({});
 
-//   return (
-//     <Container>
-//       {pageVariables.map((variables, i) => (
-//         <Page
-//           key={variables.cursor}
-//           variables={variables}
-//           isLastPage={i === pageVariables.length - 1}
-//           onLoadMore={(cursor) =>
-//             setPageVariables([...pageVariables, {cursor, take: 15}])
-//           }
-//         />
-//       ))}
-//     </Container>
-//   );
-// };
+  return (
+    <Stack>
+      {res.data?.feed.map((wallpaper) => (
+        <WallpaperCard standalone={true} wallpaper={wallpaper} />
+      ))}
+    </Stack>
+  );
 
-// const Container = styled('div', {
-//   display: 'grid',
-//   marginLeft: '10vw',
-//   gridRowGap: '50px',
-//   gridTemplateColumns: '60vw',
-//   gridTemplateRows: '650px',
-// });
+  return (
+    <Container>
+      {pageVariables.map((variables, i) => (
+        <Page
+          key={variables.cursor}
+          variables={variables}
+          isLastPage={i === pageVariables.length - 1}
+          onLoadMore={(cursor) =>
+            setPageVariables([...pageVariables, {cursor, take: 15}])
+          }
+        />
+      ))}
+    </Container>
+  );
+};
+
+const Container = styled('div', {
+  display: 'grid',
+  marginLeft: '10vw',
+  gridRowGap: '50px',
+  gridTemplateColumns: '60vw',
+  gridTemplateRows: '650px',
+});

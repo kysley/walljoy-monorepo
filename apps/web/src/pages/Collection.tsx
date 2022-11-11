@@ -1,6 +1,6 @@
 import React from 'react';
 import {useParams} from 'react-router';
-import {Page} from '../components/Page';
+import {Page} from '../components/page';
 import {WallpaperCard} from '../components/WallpaperCard';
 
 import {useCollectionQuery, useFollowCollectionMutation} from '../graphql/gen';

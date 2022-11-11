@@ -84,7 +84,7 @@ query collection($id: ID!) {
       createdAt
     }
     name
-    followers
+    # followers
   }
 }
 
@@ -111,5 +111,17 @@ query currentDevice {
       id
       name
     }
+  }
+}
+
+query deviceStatus($code: String!, $deviceId: String!) {
+  deviceStatus(code: $code, deviceId: $deviceId)
+}
+
+query feed {
+  feed {
+    id
+    unsplashUrl
+    createdAt
   }
 }

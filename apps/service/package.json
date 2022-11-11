@@ -7,8 +7,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev:old": "ts-node-dev --respawn --transpile-only src/index.ts",
     "dev": "nodemon",
+    "dev:db": "docker-compose up -d",
+    "seed": "yarn prisma db seed",
     "generate": "prisma generate",
     "build:schema": "node build-schema.js && graphql-codegen"
   },

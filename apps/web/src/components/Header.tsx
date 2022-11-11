@@ -75,7 +75,8 @@ const Container = styled('header', {
   display: 'grid',
   gridTemplateColumns: 'auto auto auto',
   alignItems: 'center',
-  padding: '2em',
+  // padding: '2em',
+  width: '50vmax',
 });
 
 const Dropdown = styled(Stack, {

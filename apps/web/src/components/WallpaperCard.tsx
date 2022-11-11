@@ -40,7 +40,7 @@ export const WallpaperCard = ({
           </>
         )}
       </LinkContainer>
-      <PanZoom source={`/img/${unsplashUrl}.jpg`} />
+      <PanZoom source={unsplashUrl} />
     </Container>
   );
 };

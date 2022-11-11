@@ -42,11 +42,18 @@ export type Device = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  authenticate?: Maybe<Account>;
   createAccount: Account;
   followCollection?: Maybe<Device>;
-  register: Account;
   registerDevice: Scalars['String'];
   selectWallpaper?: Maybe<Device>;
+};
+
+
+export type MutationAuthenticateArgs = {
+  code: Scalars['String'];
+  deviceId: Scalars['String'];
+  email: Scalars['String'];
 };
 
 
@@ -60,13 +67,6 @@ export type MutationCreateAccountArgs = {
 
 export type MutationFollowCollectionArgs = {
   id: Scalars['Int'];
-};
-
-
-export type MutationRegisterArgs = {
-  deviceId: Scalars['String'];
-  deviceName: Scalars['String'];
-  email: Scalars['String'];
 };
 
 
@@ -84,7 +84,9 @@ export type Query = {
   collection?: Maybe<Collection>;
   collectionLatest?: Maybe<Wallpaper>;
   currentDevice?: Maybe<Device>;
+  deviceStatus?: Maybe<Scalars['Boolean']>;
   devices?: Maybe<Array<Device>>;
+  feed: Array<Wallpaper>;
   me?: Maybe<Account>;
   wallpaper?: Maybe<Wallpaper>;
   wallpapers?: Maybe<Array<Wallpaper>>;
@@ -98,6 +100,19 @@ export type QueryCollectionArgs = {
 
 export type QueryCollectionLatestArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryDeviceStatusArgs = {
+  code: Scalars['String'];
+  deviceId: Scalars['String'];
+};
+
+
+export type QueryFeedArgs = {
+  cursor?: InputMaybe<Scalars['Int']>;
+  skip?: InputMaybe<Scalars['Int']>;
+  take?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -137,6 +152,15 @@ export type SelectWallpaperMutationVariables = Exact<{
 
 export type SelectWallpaperMutation = { __typename?: 'Mutation', selectWallpaper?: { __typename?: 'Device', id: string } | null };
 
+export type AuthenticateMutationVariables = Exact<{
+  deviceId: Scalars['String'];
+  email: Scalars['String'];
+  code: Scalars['String'];
+}>;
+
+
+export type AuthenticateMutation = { __typename?: 'Mutation', authenticate?: { __typename?: 'Account', id: string } | null };
+
 export type WallpaperQueryVariables = Exact<{
   id: Scalars['Int'];
 }>;
@@ -161,7 +185,7 @@ export type CollectionQueryVariables = Exact<{
 }>;
 
 
-export type CollectionQuery = { __typename?: 'Query', collection?: { __typename?: 'Collection', id: string, name: string, followers: number, wallpapers: Array<{ __typename?: 'Wallpaper', unsplashUrl?: string | null, id: string, createdAt: string }> } | null };
+export type CollectionQuery = { __typename?: 'Query', collection?: { __typename?: 'Collection', id: string, name: string, wallpapers: Array<{ __typename?: 'Wallpaper', unsplashUrl?: string | null, id: string, createdAt: string }> } | null };
 
 export type PartialDeviceFragmentFragment = { __typename?: 'Device', id: string, deviceId: string, name?: string | null };
 
@@ -174,6 +198,19 @@ export type CurrentDeviceQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type CurrentDeviceQuery = { __typename?: 'Query', currentDevice?: { __typename?: 'Device', authorized: boolean, id: string, deviceId: string, name?: string | null, followedCollection?: { __typename?: 'Collection', id: string, name: string } | null } | null };
+
+export type DeviceStatusQueryVariables = Exact<{
+  code: Scalars['String'];
+  deviceId: Scalars['String'];
+}>;
+
+
+export type DeviceStatusQuery = { __typename?: 'Query', deviceStatus?: boolean | null };
+
+export type FeedQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FeedQuery = { __typename?: 'Query', feed: Array<{ __typename?: 'Wallpaper', id: string, unsplashUrl?: string | null, createdAt: string }> };
 
 export const PartialDeviceFragmentFragmentDoc = gql`
     fragment PartialDeviceFragment on Device {
@@ -215,6 +252,17 @@ export const SelectWallpaperDocument = gql`
 
 export function useSelectWallpaperMutation() {
   return Urql.useMutation<SelectWallpaperMutation, SelectWallpaperMutationVariables>(SelectWallpaperDocument);
+};
+export const AuthenticateDocument = gql`
+    mutation authenticate($deviceId: String!, $email: String!, $code: String!) {
+  authenticate(deviceId: $deviceId, email: $email, code: $code) {
+    id
+  }
+}
+    `;
+
+export function useAuthenticateMutation() {
+  return Urql.useMutation<AuthenticateMutation, AuthenticateMutationVariables>(AuthenticateDocument);
 };
 export const WallpaperDocument = gql`
     query wallpaper($id: Int!) {
@@ -269,7 +317,6 @@ export const CollectionDocument = gql`
       createdAt
     }
     name
-    followers
   }
 }
     `;
@@ -306,4 +353,26 @@ export const CurrentDeviceDocument = gql`
 
 export function useCurrentDeviceQuery(options?: Omit<Urql.UseQueryArgs<CurrentDeviceQueryVariables>, 'query'>) {
   return Urql.useQuery<CurrentDeviceQuery, CurrentDeviceQueryVariables>({ query: CurrentDeviceDocument, ...options });
+};
+export const DeviceStatusDocument = gql`
+    query deviceStatus($code: String!, $deviceId: String!) {
+  deviceStatus(code: $code, deviceId: $deviceId)
+}
+    `;
+
+export function useDeviceStatusQuery(options: Omit<Urql.UseQueryArgs<DeviceStatusQueryVariables>, 'query'>) {
+  return Urql.useQuery<DeviceStatusQuery, DeviceStatusQueryVariables>({ query: DeviceStatusDocument, ...options });
+};
+export const FeedDocument = gql`
+    query feed {
+  feed {
+    id
+    unsplashUrl
+    createdAt
+  }
+}
+    `;
+
+export function useFeedQuery(options?: Omit<Urql.UseQueryArgs<FeedQueryVariables>, 'query'>) {
+  return Urql.useQuery<FeedQuery, FeedQueryVariables>({ query: FeedDocument, ...options });
 };

@@ -21,9 +21,9 @@ type Device {
 }
 
 type Mutation {
+  authenticate(code: String!, deviceId: String!, email: String!): Account
   createAccount(code: String!, deviceId: String!, email: String!, name: String!): Account!
   followCollection(id: Int!): Device
-  register(deviceId: String!, deviceName: String!, email: String!): Account!
   registerDevice(deviceId: String!): String!
   selectWallpaper(id: Int!): Device
 }
@@ -32,7 +32,9 @@ type Query {
   collection(id: ID!): Collection
   collectionLatest(id: ID!): Wallpaper
   currentDevice: Device
+  deviceStatus(code: String!, deviceId: String!): Boolean
   devices: [Device!]
+  feed(cursor: Int, skip: Int, take: Int): [Wallpaper!]!
   me: Account
   wallpaper(id: Int!): Wallpaper
   wallpapers: [Wallpaper!]

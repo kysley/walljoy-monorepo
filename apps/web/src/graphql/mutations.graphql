@@ -16,3 +16,9 @@ mutation selectWallpaper($id: Int!) {
     id
   }
 }
+
+mutation authenticate($deviceId: String!, $email: String!, $code: String!) {
+  authenticate(deviceId: $deviceId, email: $email, code: $code) {
+    id
+  }
+}

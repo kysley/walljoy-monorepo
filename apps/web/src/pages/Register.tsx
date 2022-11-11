@@ -1,7 +1,6 @@
-import {Fragment, ReactNode, useState} from 'react';
+import {Fragment, ReactNode, useEffect} from 'react';
 import {useForm} from 'react-hook-form';
-import {Link, useNavigate, useSearchParams} from 'react-router-dom';
-import {styled} from '@stitches/react';
+import {useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 
 // import logoReference from '/Smile_Dark.svg';
 
@@ -9,60 +8,17 @@ import {
   // useAuthenticateSessionMutation,
   // useRegisterMutation,
   useCreateAccountMutation,
-  useMeQuery,
+  useDeviceStatusQuery,
 } from '../graphql/gen';
 import {Stack} from '../components/system';
-import {Button} from '../components/Button';
-
-export const SessionGate = ({children}) => {
-  // const [{ fetching, data: authData }, authenticateSession] =
-  // 	useAuthenticateMutation();
-  // const [{ fetching, data: authData }, authenticateSession] =
-  // 	useAuthenticateSessionMutation();
-  const [res] = useMeQuery();
-
-  if (res.fetching) {
-    return <span>...loading</span>;
-  }
-
-  if (res.data?.me) {
-    return children;
-  }
-
-  // const navigate = useNavigate();
-
-  // useEffect(() => {
-  // 	const qs = new URLSearchParams(location.search);
-  // 	const name = qs.get("name");
-  // 	const deviceId = qs.get("name");
-  // 	const sessionId = qs.get("name");
-
-  // 	if (sessionId) {
-  // 		console.log({ sessionId });
-  // 		authenticateSession({ deviceID: sessionId });
-  // 	}
-  // }, []);
-
-  // if (!fetching && authData?.authenticate?.valueOf()) {
-  // 	// navigate('./');
-  // }
-
-  return children;
-
-  // return (
-  // 	<>
-  // 		{/* <Container> */}
-  // 		{fetching && <span>Loading...</span>}
-  // 		{location.search.indexOf("sId") === -1 && <span>bad url yo</span>}
-  // 		{!authData?.authenticate && !fetching && <span>maybe bad session</span>}
-  // 		{/* </Container> */}
-  // 		{authData?.authenticate?.valueOf() && children}
-  // 	</>
-  // );
-};
+import {Page} from '../components/page';
+import {Steps} from '../components/stepped-form';
+import {SessionGate} from '../components/session-gate';
 
 export const Register = () => {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const {register, handleSubmit} = useForm({
     defaultValues: {
@@ -73,52 +29,65 @@ export const Register = () => {
     },
   });
 
-  const [step, setStep] = useState(0);
+  const [res] = useDeviceStatusQuery({
+    variables: {
+      code: params.get('code'),
+      deviceId: params.get('deviceId'),
+    },
+  });
+
   const [dat, mut] = useCreateAccountMutation();
 
   const handleFormSubmit = async (data: any) => {
     console.log(data);
-    mut(data);
+    mut(data, {suspense: true});
   };
 
+  useEffect(() => {
+    if (!res.fetching && res.data?.deviceStatus) {
+      console.log('authenticate user');
+      navigate({pathname: '/authenticate', search: location.search});
+    }
+  }, [location, navigate, res]);
+
   return (
-    <SessionGate>
-      <Wrapper>
-        <Container>
-          {/* <img
-						src={logoReference}
-						style={{ height: "50px", width: "50px", marginBottom: "75px" }}
-					/> */}
-          <form onSubmit={handleSubmit(handleFormSubmit)}>
-            <Stack>
-              <Step
-                nextStep={() => setStep((prev) => (prev += 1))}
-                prevStep={() => setStep((prev) => (prev -= 1))}
-                currentStep={step === 0}
+    <SessionGate to="/">
+      <Page title="Let's get started">
+        <Stack>
+          <Steps onSubmit={handleSubmit(handleFormSubmit)} steps={3}>
+            {({currentStep}) => (
+              <Stack
+                space="large"
+                style={{justifyContent: 'flex-start', display: 'flex'}}
               >
-                <h1>Let's get started</h1>
-                <span>What do you call this device?</span>
-                <input {...register('name')} placeholder={params.name} />
-              </Step>
-              <Step
-                nextStep={() => setStep((prev) => (prev += 1))}
-                prevStep={() => setStep((prev) => (prev -= 1))}
-                currentStep={step === 1}
-                isFinalStep={true}
-              >
-                <input {...register('email')} placeholder="Email" />
-                <Button type="submit">Register</Button>
-              </Step>
-            </Stack>
-          </form>
-          <div>
-            <h2>already have an account?</h2>
-            <Link to={`/authorize${location.search}`}>
-              Add this device to your account
-            </Link>
-          </div>
-        </Container>
-      </Wrapper>
+                {currentStep === 1 && (
+                  <Fragment>
+                    <h2>What do you call this device?</h2>
+                    <input
+                      {...register('name')}
+                      placeholder={params.get('name') || undefined}
+                    />
+                  </Fragment>
+                )}
+                {currentStep === 2 && (
+                  <Stack space="medium">
+                    <div>
+                      <h2>What's your email?</h2>
+                      <p>
+                        We use this to connect multiple devices to your account.
+                      </p>
+                    </div>
+                    <input
+                      {...register('email')}
+                      placeholder={params.get('email') || undefined}
+                    />
+                  </Stack>
+                )}
+              </Stack>
+            )}
+          </Steps>
+        </Stack>
+      </Page>
     </SessionGate>
   );
 };
@@ -128,42 +97,28 @@ const Step = ({
   nextStep,
   prevStep,
   isFinalStep = false,
+  finalStepText,
   currentStep,
 }: {
   children: ReactNode;
   nextStep(): void;
   prevStep(): void;
   isFinalStep?: Boolean;
+  finalStepText?: string;
   currentStep: boolean;
 }) => {
   if (!currentStep) {
     return null;
   }
   return (
-    <Fragment>
+    <div>
       {children}
       {isFinalStep ? (
-        <button type="submit">sign up</button>
+        <button type="submit">{finalStepText}</button>
       ) : (
         <button onClick={nextStep}>continue</button>
       )}
       <button onClick={prevStep}>go back</button>
-    </Fragment>
+    </div>
   );
 };
-
-const Wrapper = styled('div', {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-});
-
-const Container = styled('div', {
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  background: '#e4e4e4',
-  padding: '2em',
-  borderRadius: '5px',
-});

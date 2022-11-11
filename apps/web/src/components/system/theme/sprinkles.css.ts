@@ -59,17 +59,18 @@ const commonProperties = defineProperties({
 
     borderStyle: ['solid', 'dotted'],
 
-    borderColor: {...vars.colors.blue, ...vars.colors.red},
+    borderColor: vars.flatColors,
 
     borderRadius: vars.radii,
 
-    color: {...vars.colors.blue, ...vars.colors.red},
-    backgroundColor: {...vars.colors.blue, ...vars.colors.red},
+    color: vars.flatColors,
+    backgroundColor: vars.flatColors,
 
     fontSize: vars.typography,
   },
   shorthands: {
     margin: ['marginTop', 'marginBottom', 'marginLeft', 'marginRight'],
+    m: ['marginTop', 'marginBottom', 'marginLeft', 'marginRight'],
     marginX: ['marginLeft', 'marginRight'],
     marginY: ['marginTop', 'marginBottom'],
 

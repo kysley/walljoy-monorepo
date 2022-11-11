@@ -10,6 +10,8 @@ type StackProps = {
    * Defines the spacing between the items.
    */
   space?: Sprinkles['gap'];
+
+  backgroundColor?: Sprinkles['backgroundColor'];
   /**
    * Sets the horizontal alignment of the items.
    */
@@ -36,6 +38,7 @@ export function Stack({
     flexDirection: direction,
     gap: space,
     alignItems: align,
+    // backgroundColor: 'blue-900',
   });
 
   return React.createElement(as, {className}, children);
