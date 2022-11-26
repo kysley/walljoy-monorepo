@@ -16,7 +16,7 @@ export const Collection = () => {
   const {data: device} = useCurrentDevice();
 
   const isDeviceFollowing =
-    device?.currentDevice?.followedCollection?.id === res.data?.collection?.id;
+    device?.currentDevice?.following?.id === res.data?.collection?.id;
 
   if (!id) {
     return <span>no collection id</span>;
@@ -32,7 +32,7 @@ export const Collection = () => {
         {isDeviceFollowing ? 'following' : 'follow'}
       </button>
       {res.data?.collection?.wallpapers.map((wp) => (
-        <WallpaperCard key={wp.id} wallpaper={wp} standalone />
+        <WallpaperCard key={wp.id} wallpaper={wp.wallpaper} standalone />
       ))}
     </Page>
   );

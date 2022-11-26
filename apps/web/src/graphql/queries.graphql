@@ -1,58 +1,9 @@
-# query wallpapers($where: PaginationArgs) {
-#   wallpapers(where: $where) {
-#     u_url
-#     id
-#     createdAt
-#     collection {
-#       id
-#       name
-#     }
-#   }
-# }
-
-# query collection($id: Int, $name: String) {
-#   collection(where: {id: $id, name: $name}) {
-#     id
-#     name
-#     wallpapers {
-#       u_url
-#       id
-#       createdAt
-#     }
-#   }
-# }
-
-# query Feed($where: PaginationArgs) {
-#   feed(where: $where) {
-#     u_url
-#     id
-#     createdAt
-#     collection {
-#       id
-#       name
-#     }
-#   }
-# }
-
-# query signin {
-#   signin {
-#     email
-#     id
-#     devices {
-#       name
-#       id
-#       authorized
-#     }
-#   }
-# }
-
-
 query wallpaper($id: Int!) {
   wallpaper(id: $id) {
     id
     unsplashUrl
+    devicesCount
     createdAt
-    devices
   }
 }
 
@@ -79,12 +30,13 @@ query collection($id: ID!) {
   collection(id: $id) {
     id
     wallpapers {
-      unsplashUrl
-      id
-      createdAt
+      addedAt
+      wallpaper {
+        unsplashUrl
+        id
+      }
     }
     name
-    # followers
   }
 }
 
@@ -97,7 +49,7 @@ fragment PartialDeviceFragment on Device {
 query devices {
   devices {
     ...PartialDeviceFragment
-    followedCollection {
+    following {
       name
     }
   }
@@ -107,7 +59,7 @@ query currentDevice {
   currentDevice {
     ...PartialDeviceFragment
     authorized
-    followedCollection {
+    following {
       id
       name
     }
@@ -122,6 +74,7 @@ query feed {
   feed {
     id
     unsplashUrl
+    collectionCount
     createdAt
   }
 }

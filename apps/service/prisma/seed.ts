@@ -54,70 +54,77 @@ async function main() {
     ],
   });
 
-  // Earth collection
-  await prisma.collection.update({
-    where: {
-      id: 1,
-    },
-    data: {
-      wallpapers: {
-        create: [
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-        ],
+  await prisma.wallpaper.createMany({
+    data: [
+      {
+        u_url: await waitToGetUnsplashUrl("earth"),
       },
-    },
+      {
+        u_url: await waitToGetUnsplashUrl("earth"),
+      },
+      {
+        u_url: await waitToGetUnsplashUrl("earth"),
+      },
+      {
+        u_url: await waitToGetUnsplashUrl("structure"),
+      },
+      {
+        u_url: await waitToGetUnsplashUrl("structure"),
+      },
+      {
+        u_url: await waitToGetUnsplashUrl("structure"),
+      },
+      {
+        u_url: await waitToGetUnsplashUrl("random"),
+      },
+      {
+        u_url: await waitToGetUnsplashUrl("random"),
+      },
+      {
+        u_url: await waitToGetUnsplashUrl("random"),
+      },
+    ],
   });
 
-  // Random collection
-  await prisma.collection.update({
-    where: {
-      id: 2,
-    },
-    data: {
-      wallpapers: {
-        create: [
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-        ],
+  await prisma.collectionWallpaper.createMany({
+    data: [
+      {
+        collectionId: 1,
+        wallpaperId: 1,
       },
-    },
-  });
-
-  // Structure collection
-  await prisma.collection.update({
-    where: {
-      id: 3,
-    },
-    data: {
-      wallpapers: {
-        create: [
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-          {
-            u_url: await waitToGetUnsplashUrl(),
-          },
-        ],
+      {
+        collectionId: 1,
+        wallpaperId: 2,
       },
-    },
+      {
+        collectionId: 1,
+        wallpaperId: 3,
+      },
+      {
+        collectionId: 2,
+        wallpaperId: 4,
+      },
+      {
+        collectionId: 2,
+        wallpaperId: 5,
+      },
+      {
+        collectionId: 2,
+        wallpaperId: 6,
+      },
+      {
+        collectionId: 3,
+        wallpaperId: 7,
+      },
+      {
+        collectionId: 3,
+        wallpaperId: 8,
+      },
+      {
+        collectionId: 3,
+        wallpaperId: 9,
+      },
+    ],
   });
 }
 

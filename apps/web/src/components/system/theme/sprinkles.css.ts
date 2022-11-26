@@ -5,6 +5,9 @@ const commonProperties = defineProperties({
   properties: {
     display: ['none', 'flex', 'grid'],
     flexDirection: ['column', 'row'],
+    gridTemplateColumns: {
+      twoColumn: '1fr 1fr',
+    },
     // abbreviations for alignitems and such- not necessary (or wanted) -->
     alignItems: {
       start: 'flex-start',

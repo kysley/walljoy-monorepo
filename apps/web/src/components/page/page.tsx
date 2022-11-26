@@ -6,7 +6,7 @@ import {system} from '../system/theme/sprinkles.css';
 import {pageStyles, titleStyles} from './page.css';
 
 type PageProps = {
-  title: string;
+  title?: string;
   children: ReactNode;
 };
 
@@ -14,7 +14,7 @@ export const Page = ({title, children}: PageProps) => {
   return (
     <main>
       <Stack>
-        <h1 className={titleStyles}>{title}</h1>
+        {title && <h1 className={titleStyles}>{title}</h1>}
         <section className={pageStyles}>{children}</section>
       </Stack>
     </main>

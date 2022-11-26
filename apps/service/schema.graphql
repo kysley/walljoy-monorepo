@@ -8,16 +8,28 @@ type Collection {
   followers: Int!
   id: ID!
   name: String!
-  wallpapers: [Wallpaper!]!
+  wallpapers: [CollectionWallpaper!]!
 }
+
+type CollectionWallpaper {
+  addedAt: Date!
+  collection: Collection!
+  id: ID!
+  wallpaper: Wallpaper!
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
 
 type Device {
   authorized: Boolean!
   deviceId: String!
-  followedCollection: Collection
+  following: Collection
   id: ID!
   name: String
-  selectWallpaper: Wallpaper
+  wallpaper: Wallpaper
 }
 
 type Mutation {
@@ -33,6 +45,7 @@ type Query {
   collectionLatest(id: ID!): Wallpaper
   currentDevice: Device
   deviceStatus(code: String!, deviceId: String!): Boolean
+  deviceWallpaper(code: String, deviceId: String!): Wallpaper
   devices: [Device!]
   feed(cursor: Int, skip: Int, take: Int): [Wallpaper!]!
   me: Account
@@ -40,9 +53,15 @@ type Query {
   wallpapers: [Wallpaper!]
 }
 
+type Subscription {
+  name: String!
+}
+
 type Wallpaper {
-  createdAt: String!
-  devices: Int!
+  collectionCount: Int!
+  collections: [CollectionWallpaper!]!
+  createdAt: Date!
+  devicesCount: Int!
   id: ID!
   unsplashUrl: String
 }

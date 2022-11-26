@@ -13,6 +13,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  Date: any;
 };
 
 export type Account = {
@@ -27,17 +28,25 @@ export type Collection = {
   followers: Scalars['Int'];
   id: Scalars['ID'];
   name: Scalars['String'];
-  wallpapers: Array<Wallpaper>;
+  wallpapers: Array<CollectionWallpaper>;
+};
+
+export type CollectionWallpaper = {
+  __typename?: 'CollectionWallpaper';
+  addedAt: Scalars['Date'];
+  collection: Collection;
+  id: Scalars['ID'];
+  wallpaper: Wallpaper;
 };
 
 export type Device = {
   __typename?: 'Device';
   authorized: Scalars['Boolean'];
   deviceId: Scalars['String'];
-  followedCollection?: Maybe<Collection>;
+  following?: Maybe<Collection>;
   id: Scalars['ID'];
   name?: Maybe<Scalars['String']>;
-  selectWallpaper?: Maybe<Wallpaper>;
+  wallpaper?: Maybe<Wallpaper>;
 };
 
 export type Mutation = {
@@ -85,6 +94,7 @@ export type Query = {
   collectionLatest?: Maybe<Wallpaper>;
   currentDevice?: Maybe<Device>;
   deviceStatus?: Maybe<Scalars['Boolean']>;
+  deviceWallpaper?: Maybe<Wallpaper>;
   devices?: Maybe<Array<Device>>;
   feed: Array<Wallpaper>;
   me?: Maybe<Account>;
@@ -109,6 +119,12 @@ export type QueryDeviceStatusArgs = {
 };
 
 
+export type QueryDeviceWallpaperArgs = {
+  code?: InputMaybe<Scalars['String']>;
+  deviceId: Scalars['String'];
+};
+
+
 export type QueryFeedArgs = {
   cursor?: InputMaybe<Scalars['Int']>;
   skip?: InputMaybe<Scalars['Int']>;
@@ -122,8 +138,10 @@ export type QueryWallpaperArgs = {
 
 export type Wallpaper = {
   __typename?: 'Wallpaper';
-  createdAt: Scalars['String'];
-  devices: Scalars['Int'];
+  collectionCount: Scalars['Int'];
+  collections: Array<CollectionWallpaper>;
+  createdAt: Scalars['Date'];
+  devicesCount: Scalars['Int'];
   id: Scalars['ID'];
   unsplashUrl?: Maybe<Scalars['String']>;
 };
@@ -166,7 +184,7 @@ export type WallpaperQueryVariables = Exact<{
 }>;
 
 
-export type WallpaperQuery = { __typename?: 'Query', wallpaper?: { __typename?: 'Wallpaper', id: string, unsplashUrl?: string | null, createdAt: string, devices: number } | null };
+export type WallpaperQuery = { __typename?: 'Query', wallpaper?: { __typename?: 'Wallpaper', id: string, unsplashUrl?: string | null, devicesCount: number, createdAt: any } | null };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -185,19 +203,19 @@ export type CollectionQueryVariables = Exact<{
 }>;
 
 
-export type CollectionQuery = { __typename?: 'Query', collection?: { __typename?: 'Collection', id: string, name: string, wallpapers: Array<{ __typename?: 'Wallpaper', unsplashUrl?: string | null, id: string, createdAt: string }> } | null };
+export type CollectionQuery = { __typename?: 'Query', collection?: { __typename?: 'Collection', id: string, name: string, wallpapers: Array<{ __typename?: 'CollectionWallpaper', addedAt: any, wallpaper: { __typename?: 'Wallpaper', unsplashUrl?: string | null, id: string } }> } | null };
 
 export type PartialDeviceFragmentFragment = { __typename?: 'Device', id: string, deviceId: string, name?: string | null };
 
 export type DevicesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DevicesQuery = { __typename?: 'Query', devices?: Array<{ __typename?: 'Device', id: string, deviceId: string, name?: string | null, followedCollection?: { __typename?: 'Collection', name: string } | null }> | null };
+export type DevicesQuery = { __typename?: 'Query', devices?: Array<{ __typename?: 'Device', id: string, deviceId: string, name?: string | null, following?: { __typename?: 'Collection', name: string } | null }> | null };
 
 export type CurrentDeviceQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentDeviceQuery = { __typename?: 'Query', currentDevice?: { __typename?: 'Device', authorized: boolean, id: string, deviceId: string, name?: string | null, followedCollection?: { __typename?: 'Collection', id: string, name: string } | null } | null };
+export type CurrentDeviceQuery = { __typename?: 'Query', currentDevice?: { __typename?: 'Device', authorized: boolean, id: string, deviceId: string, name?: string | null, following?: { __typename?: 'Collection', id: string, name: string } | null } | null };
 
 export type DeviceStatusQueryVariables = Exact<{
   code: Scalars['String'];
@@ -210,7 +228,7 @@ export type DeviceStatusQuery = { __typename?: 'Query', deviceStatus?: boolean |
 export type FeedQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type FeedQuery = { __typename?: 'Query', feed: Array<{ __typename?: 'Wallpaper', id: string, unsplashUrl?: string | null, createdAt: string }> };
+export type FeedQuery = { __typename?: 'Query', feed: Array<{ __typename?: 'Wallpaper', id: string, unsplashUrl?: string | null, collectionCount: number, createdAt: any }> };
 
 export const PartialDeviceFragmentFragmentDoc = gql`
     fragment PartialDeviceFragment on Device {
@@ -269,8 +287,8 @@ export const WallpaperDocument = gql`
   wallpaper(id: $id) {
     id
     unsplashUrl
+    devicesCount
     createdAt
-    devices
   }
 }
     `;
@@ -312,9 +330,11 @@ export const CollectionDocument = gql`
   collection(id: $id) {
     id
     wallpapers {
-      unsplashUrl
-      id
-      createdAt
+      addedAt
+      wallpaper {
+        unsplashUrl
+        id
+      }
     }
     name
   }
@@ -328,7 +348,7 @@ export const DevicesDocument = gql`
     query devices {
   devices {
     ...PartialDeviceFragment
-    followedCollection {
+    following {
       name
     }
   }
@@ -343,7 +363,7 @@ export const CurrentDeviceDocument = gql`
   currentDevice {
     ...PartialDeviceFragment
     authorized
-    followedCollection {
+    following {
       id
       name
     }
@@ -368,6 +388,7 @@ export const FeedDocument = gql`
   feed {
     id
     unsplashUrl
+    collectionCount
     createdAt
   }
 }

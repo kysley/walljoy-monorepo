@@ -1,5 +1,6 @@
 import {styled} from '@stitches/react';
 import React, {useState} from 'react';
+import {Page} from '../components/page';
 import {Stack} from '../components/system';
 
 import {WallpaperCard} from '../components/WallpaperCard';
@@ -48,27 +49,33 @@ export const Feed = () => {
   const [res] = useFeedQuery({});
 
   return (
-    <Stack>
-      {res.data?.feed.map((wallpaper) => (
-        <WallpaperCard standalone={true} wallpaper={wallpaper} />
-      ))}
-    </Stack>
+    <Page>
+      <Stack space="large">
+        {res.data?.feed.map((wallpaper) => (
+          <WallpaperCard
+            showMoreInfo={true}
+            wallpaper={wallpaper}
+            key={wallpaper.id}
+          />
+        ))}
+      </Stack>
+    </Page>
   );
 
-  return (
-    <Container>
-      {pageVariables.map((variables, i) => (
-        <Page
-          key={variables.cursor}
-          variables={variables}
-          isLastPage={i === pageVariables.length - 1}
-          onLoadMore={(cursor) =>
-            setPageVariables([...pageVariables, {cursor, take: 15}])
-          }
-        />
-      ))}
-    </Container>
-  );
+  // return (
+  //   <Container>
+  //     {pageVariables.map((variables, i) => (
+  //       <Page
+  //         key={variables.cursor}
+  //         variables={variables}
+  //         isLastPage={i === pageVariables.length - 1}
+  //         onLoadMore={(cursor) =>
+  //           setPageVariables([...pageVariables, {cursor, take: 15}])
+  //         }
+  //       />
+  //     ))}
+  //   </Container>
+  // );
 };
 
 const Container = styled('div', {

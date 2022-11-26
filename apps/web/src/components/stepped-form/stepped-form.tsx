@@ -49,7 +49,9 @@ export const Steps = ({
             <button onClick={(_) => setStep((p) => p - 1)}>Back</button>
           )}
           {step === steps ? (
-            <button type="submit">Submit</button>
+            <button type="submit" onClick={onSubmit}>
+              Submit
+            </button>
           ) : (
             <button onClick={(_) => setStep((p) => p + 1)}>Next</button>
           )}

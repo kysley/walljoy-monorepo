@@ -9,9 +9,9 @@ export const titleStyles = style({
 export const pageStyles = style({
   // backgroundColor: vars.colors.neutral['neutral-900'],
   borderRadius: vars.radii.small,
-  padding: vars.spacing.large,
+  // padding: vars.spacing.large,
   justifySelf: 'flex-start',
-  marginLeft: vars.spacing.small,
+  // marginLeft: vars.spacing.small,
   // marginLeft: vars.spacing.small,
   // marginRight: vars.spacing.small,
 });

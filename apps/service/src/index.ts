@@ -10,9 +10,6 @@ import { Device, Wallpaper } from "./schema";
 import "./schema";
 import { lexicographicSortSchema, printSchema } from "graphql";
 import { writeFileSync } from "fs";
-import { BaseTypeRef } from "@pothos/core";
-import { info } from "console";
-import { Prisma } from "@prisma/client";
 
 type UserDeviceCookie = {
   deviceId: string;
@@ -21,6 +18,39 @@ type UserDeviceCookie = {
 
 builder.queryType({
   fields: (t) => ({
+    deviceWallpaper: t.prismaField({
+      type: "Wallpaper",
+      args: {
+        code: t.arg.string(),
+        deviceId: t.arg.string({ required: true }),
+      },
+      smartSubscription: true,
+      // subscribe: (subscriptions, root, args, ctx, info) => {
+      //   subscriptions.register("wallpaper-updated");
+      // },
+      nullable: true,
+      resolve: async (query, root, args, { request }, info) => {
+        const device = await prisma.device.findUnique({
+          select: {
+            wallpaper: true,
+            following: {
+              include: {
+                wallpapers: {
+                  take: 1,
+                },
+              },
+            },
+          },
+          where: { deviceId: args.deviceId },
+        });
+        console.log(device);
+        if (device?.wallpaper) {
+          return device.wallpaper;
+        }
+
+        return device?.following?.wallpapers[0];
+      },
+    }),
     feed: t.prismaField({
       type: ["Wallpaper"],
       args: {
@@ -40,6 +70,13 @@ builder.queryType({
           orderBy: {
             createdAt: args?.orderBy ?? "desc",
           },
+          // select: {
+          //   _count: {
+          //     select: {
+          //       collections: true,
+          //     },
+          //   },
+          // },
         });
         // const cookieValue = request.cookies.token;
         // if (cookieValue) {
@@ -152,7 +189,10 @@ builder.queryType({
       },
       nullable: true,
       resolve: async (query, root, args, ctx, info) => {
-        return prisma.wallpaper.findUnique({ where: { id: args.id } });
+        return prisma.wallpaper.findUnique({
+          where: { id: args.id },
+          include: { _count: { select: { devices: true, collections: true } } },
+        });
       },
     }),
     deviceStatus: t.boolean({
@@ -186,7 +226,9 @@ builder.mutationType({
         const code = Math.random().toString(36).slice(2, 6).toUpperCase();
         const device = await prisma.device.upsert({
           where: { deviceId },
-          update: {},
+          update: {
+            code,
+          },
           create: {
             deviceId,
             code,
@@ -260,10 +302,10 @@ builder.mutationType({
               deviceId: jwt.deviceId,
             },
             data: {
-              selectWallpaper: {
+              wallpaper: {
                 disconnect: true,
               },
-              followedCollection: {
+              following: {
                 connect: {
                   id: args.id,
                 },
@@ -289,7 +331,7 @@ builder.mutationType({
               deviceId: jwt.deviceId,
             },
             data: {
-              selectWallpaper: {
+              wallpaper: {
                 connect: {
                   id: args.id,
                 },

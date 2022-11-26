@@ -40,24 +40,15 @@ model Device {
   lastSeen   DateTime @updatedAt
 
   // If the device is following a collection
-  followedCollection   Collection? @relation(fields: [followedCollectionId], references: [id])
-  followedCollectionId Int?
+  following   Collection? @relation(fields: [followingId], references: [id])
+  followingId Int?
 
   // If the device has set a specific wallpaper (not following a collection)
-  selectWallpaper   Wallpaper? @relation(fields: [selectWallpaperId], references: [id])
-  selectWallpaperId Int?
+  wallpaper   Wallpaper? @relation(fields: [wallpaperId], references: [id])
+  wallpaperId Int?
 
   accountId String?
   account   Account? @relation(fields: [accountId], references: [id])
-
-  history DeviceHistory[]
-}
-
-model DeviceHistory {
-  device   Device @relation(fields: [deviceId], references: [id])
-  deviceId String @unique
-
-  wallpapers Wallpaper[]
 }
 
 model Wallpaper {
@@ -66,12 +57,9 @@ model Wallpaper {
   updatedAt DateTime @updatedAt
   u_url     String   @unique
 
-  collection Collection[]
-
   devices Device[]
 
-  deviceHistory         DeviceHistory? @relation(fields: [deviceHistoryDeviceId], references: [deviceId])
-  deviceHistoryDeviceId String?
+  collections CollectionWallpaper[]
 }
 
 model Collection {
@@ -84,7 +72,20 @@ model Collection {
   owner   Account @relation(fields: [ownerId], references: [id])
   ownerId String
 
-  wallpapers Wallpaper[]
+  wallpapers CollectionWallpaper[]
 
   devices Device[]
+}
+
+model CollectionWallpaper {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id])
+  wallpaper  Wallpaper  @relation(fields: [wallpaperId], references: [id])
+
+  collectionId Int
+  wallpaperId  Int
+
+  @@unique([collectionId, wallpaperId])
 }

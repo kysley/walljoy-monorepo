@@ -38,33 +38,21 @@ export const Header = () => {
 
   return (
     <Container>
-      <div
-        style={{
-          fontSize: '2.5em',
-          fontWeight: 700,
-        }}
-      >
-        walljoy
-      </div>
-      <Stack direction="row">
-        <Link to="/">Feed</Link>
-        {/* <DropdownTarget>
-          Collections
-          <Dropdown direction="column">
-            <Link to="/c/1">Random</Link>
-            <Link to="/c/2">Structure</Link>
-            <Link to="/c/3">Earth</Link>
-          </Dropdown>
-        </DropdownTarget> */}
-      </Stack>
+      <Link to="/" style={{color: 'inherit', textDecoration: 'none'}}>
+        <h1>walljoy</h1>
+      </Link>
+      {/* <NavLink to="/">Feed</NavLink> */}
       {res.data?.me && (
-        <div>
-          <CgUser size="24" />
+        <div
+          style={{
+            alignItems: 'center',
+            display: 'flex',
+            justifySelf: 'flex-end',
+            gap: '48px',
+          }}
+        >
+          <NavLink to="account/devices">Devices</NavLink>
           {res.data?.me.email}
-          <NavLink to="account/devices">
-            <CgDesktop size="24" />
-            Devices
-          </NavLink>
         </div>
       )}
     </Container>
@@ -73,10 +61,9 @@ export const Header = () => {
 
 const Container = styled('header', {
   display: 'grid',
-  gridTemplateColumns: 'auto auto auto',
+  gridTemplateColumns: 'auto 1fr',
+  gap: '32px',
   alignItems: 'center',
-  // padding: '2em',
-  width: '50vmax',
 });
 
 const Dropdown = styled(Stack, {
