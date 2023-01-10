@@ -1,4 +1,19 @@
-# Turborepo starter
+### This project doesn't seem to pass [Unsplash's api guidelines](https://help.unsplash.com/en/articles/2511257-guideline-replicating-unsplash)
+
+> 🚫 a wallpaper app returns Unsplash images for downloading. Without the integration, the app has no content and no value to users.
+
+> 🚫 an unofficial Unsplash for Android app allows users to search for Unsplash images and download them. Without the API, the app has no content and no value to users.
+
+While Walljoy isn't exactly what the two points above describe, it is true that without the Unsplash API, walljoy would not be able to exist. **I haven't reached out to Unsplash directly** - other projects have taken priority :smile: and this is on the backburner.
+
+[You can find the taskbar app at kysley/walljoy](https://github.com/kysley/walljoy)
+
+---
+
+# Walljoy
+
+Walljoy is a taskbar app that changes your wallpaper at midnight. You can choose a random wallpaper, or follow a collection for curated wallpapers.
+
 
 This is an official Yarn v1 starter turborepo.
 
